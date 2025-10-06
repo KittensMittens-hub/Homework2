@@ -1,0 +1,1357 @@
+---
+title: "Mean and SE in outcome"
+author: "Timkna Natalia"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+
+```
+# Низкая истинная вероятность успеха, очень малая выборка (3 человека), 1000 повторений  
+## Модель пациента  - исследование исхода  
+```{r outcome1, echo=FALSE}
+# параметры распределения
+p_true <- 0.1  # Истинная вероятность успеха
+values <- 0:1  # Возможные исходы: 0 - неудача, 1 - успех
+
+df <- data.frame(
+  values = values,
+  Pr = c(1 - p_true, p_true)  # Вероятности для 0 и 1 соответственно
+)
+
+ggplot(df, aes(x = factor(values), y = Pr)) +
+  geom_col(width = 0.7, fill = "steelblue", alpha = 0.7) +  
+  scale_x_discrete(labels = c("Неудача", "Успех")) +
+  labs(
+    title = "Распределение",
+    subtitle = paste("Вероятность успеха =", p_true),
+    x = "Исход",
+    y = "Вероятность"
+  ) +
+  theme_bw() +
+  ylim(0, 1)
+
+```
+## Характеристики исхода
+
+```{r characteristics1}
+true_mean <- p_true # Истинное среднее (математическое ожидание)
+
+print(true_mean)
+
+variance <- p_true * (1 - p_true) # Дисперсия
+
+print(variance)
+
+standard_deviation <- sqrt(variance)
+
+print(standard_deviation)
+```
+## Однократная оценка по выборке
+
+```{r sample1}
+n_patients <- 3 # Количество пациентов 
+
+my_group_outcome_upd <- round(rbinom(n_patients, 1, p_true))
+
+print(my_group_outcome_upd)
+
+sample_mean <- mean(my_group_outcome_upd)
+
+print(sample_mean)
+
+```
+## Набираем статистику
+
+```{r sample n1}
+n_patients <- 3 # Количество добровольцев 
+
+n_repeats <- 1000 # Количество повторений эксперимента
+
+df_all_repeats <- data.frame(
+  n_exp = rep(1:n_repeats, each = n_patients),
+  ID =  rep(1:n_patients, n_repeats),
+  outcome_upd = round(rbinom(n_repeats*n_patients, 1, p_true))
+)
+```
+## Оценка среднего в каждом эксперименте
+
+```{r}
+df_sample_mean <- df_all_repeats %>% 
+  group_by(n_exp) %>% 
+  dplyr::summarise(mean_outcome_upd = mean(outcome_upd)) %>% 
+  ungroup()
+
+ggplot(df_sample_mean, aes(x = mean_outcome_upd)) +
+  geom_histogram(color = 'black', fill = 'blue', binwidth = 0.2) +
+  theme_bw()
+```
+## Количественные и качественные итоги
+```{r}
+error <- sqrt( mean((df_sample_mean$mean_outcome_upd-true_mean)^2) )
+print(error)
+
+```
+# Низкая истинная вероятность успеха, малая выборка (10 человек), 1000 повторений  
+## Модель пациента  - исследование исхода  
+```{r outcome2, echo=FALSE}
+# параметры распределения
+p_true <- 0.1  # Истинная вероятность успеха
+values <- 0:1  # Возможные исходы: 0 - неудача, 1 - успех
+
+df <- data.frame(
+  values = values,
+  Pr = c(1 - p_true, p_true)  # Вероятности для 0 и 1 соответственно
+)
+
+ggplot(df, aes(x = factor(values), y = Pr)) +
+  geom_col(width = 0.7, fill = "steelblue", alpha = 0.7) +  
+  scale_x_discrete(labels = c("Неудача", "Успех")) +
+  labs(
+    title = "Распределение",
+    subtitle = paste("Вероятность успеха =", p_true),
+    x = "Исход",
+    y = "Вероятность"
+  ) +
+  theme_bw() +
+  ylim(0, 1)
+
+```
+## Характеристики исхода
+
+```{r characteristics2}
+true_mean <- p_true # Истинное среднее (математическое ожидание)
+
+print(true_mean)
+
+variance <- p_true * (1 - p_true) # Дисперсия
+
+print(variance)
+
+standard_deviation <- sqrt(variance)
+
+print(standard_deviation)
+```
+## Однократная оценка по выборке
+
+```{r sample2}
+n_patients <- 10 # Количество пациентов 
+
+my_group_outcome_upd <- round(rbinom(n_patients, 1, p_true))
+
+print(my_group_outcome_upd)
+
+sample_mean <- mean(my_group_outcome_upd)
+
+print(sample_mean)
+
+```
+## Набираем статистику
+
+```{r sample n2}
+n_patients <- 10 # Количество добровольцев 
+
+n_repeats <- 1000 # Количество повторений эксперимента
+
+df_all_repeats <- data.frame(
+  n_exp = rep(1:n_repeats, each = n_patients),
+  ID =  rep(1:n_patients, n_repeats),
+  outcome_upd = round(rbinom(n_repeats*n_patients, 1, p_true))
+)
+```
+## Оценка среднего в каждом эксперименте
+
+```{r}
+df_sample_mean <- df_all_repeats %>% 
+  group_by(n_exp) %>% 
+  dplyr::summarise(mean_outcome_upd = mean(outcome_upd)) %>% 
+  ungroup()
+
+ggplot(df_sample_mean, aes(x = mean_outcome_upd)) +
+  geom_histogram(color = 'black', fill = 'blue', binwidth = 0.2) +
+  theme_bw()
+```
+## Количественные и качественные итоги
+```{r}
+error <- sqrt( mean((df_sample_mean$mean_outcome_upd-true_mean)^2) )
+print(error)
+
+```
+# Низкая истинная вероятность успеха, средняя выборка (50 человек), 1000 повторений  
+## Модель пациента  - исследование исхода  
+```{r outcome3, echo=FALSE}
+# параметры распределения
+p_true <- 0.1  # Истинная вероятность успеха
+values <- 0:1  # Возможные исходы: 0 - неудача, 1 - успех
+
+df <- data.frame(
+  values = values,
+  Pr = c(1 - p_true, p_true)  # Вероятности для 0 и 1 соответственно
+)
+
+ggplot(df, aes(x = factor(values), y = Pr)) +
+  geom_col(width = 0.7, fill = "steelblue", alpha = 0.7) +  
+  scale_x_discrete(labels = c("Неудача", "Успех")) +
+  labs(
+    title = "Распределение",
+    subtitle = paste("Вероятность успеха =", p_true),
+    x = "Исход",
+    y = "Вероятность"
+  ) +
+  theme_bw() +
+  ylim(0, 1)
+
+```
+## Характеристики исхода
+
+```{r characteristics3}
+true_mean <- p_true # Истинное среднее (математическое ожидание)
+
+print(true_mean)
+
+variance <- p_true * (1 - p_true) # Дисперсия
+
+print(variance)
+
+standard_deviation <- sqrt(variance)
+
+print(standard_deviation)
+```
+## Однократная оценка по выборке
+
+```{r sample3}
+n_patients <- 50 # Количество пациентов 
+
+my_group_outcome_upd <- round(rbinom(n_patients, 1, p_true))
+
+print(my_group_outcome_upd)
+
+sample_mean <- mean(my_group_outcome_upd)
+
+print(sample_mean)
+
+```
+## Набираем статистику
+
+```{r sample n3}
+n_patients <- 50 # Количество добровольцев 
+
+n_repeats <- 1000 # Количество повторений эксперимента
+
+df_all_repeats <- data.frame(
+  n_exp = rep(1:n_repeats, each = n_patients),
+  ID =  rep(1:n_patients, n_repeats),
+  outcome_upd = round(rbinom(n_repeats*n_patients, 1, p_true))
+)
+```
+## Оценка среднего в каждом эксперименте
+
+```{r}
+df_sample_mean <- df_all_repeats %>% 
+  group_by(n_exp) %>% 
+  dplyr::summarise(mean_outcome_upd = mean(outcome_upd)) %>% 
+  ungroup()
+
+ggplot(df_sample_mean, aes(x = mean_outcome_upd)) +
+  geom_histogram(color = 'black', fill = 'blue', binwidth = 0.2) +
+  theme_bw()
+```
+## Количественные и качественные итоги
+```{r}
+error <- sqrt( mean((df_sample_mean$mean_outcome_upd-true_mean)^2) )
+print(error)
+
+```
+# Низкая истинная вероятность успеха, большая выборка (500 человек), 1000 повторений  
+## Модель пациента  - исследование исхода  
+```{r outcome4, echo=FALSE}
+# параметры распределения
+p_true <- 0.1  # Истинная вероятность успеха
+values <- 0:1  # Возможные исходы: 0 - неудача, 1 - успех
+
+df <- data.frame(
+  values = values,
+  Pr = c(1 - p_true, p_true)  # Вероятности для 0 и 1 соответственно
+)
+
+ggplot(df, aes(x = factor(values), y = Pr)) +
+  geom_col(width = 0.7, fill = "steelblue", alpha = 0.7) +  
+  scale_x_discrete(labels = c("Неудача", "Успех")) +
+  labs(
+    title = "Распределение",
+    subtitle = paste("Вероятность успеха =", p_true),
+    x = "Исход",
+    y = "Вероятность"
+  ) +
+  theme_bw() +
+  ylim(0, 1)
+
+```
+## Характеристики исхода
+
+```{r characteristics}
+true_mean <- p_true # Истинное среднее (математическое ожидание)
+
+print(true_mean)
+
+variance <- p_true * (1 - p_true) # Дисперсия
+
+print(variance)
+
+standard_deviation <- sqrt(variance)
+
+print(standard_deviation)
+```
+## Однократная оценка по выборке
+
+```{r sample4}
+n_patients <- 500 # Количество пациентов 
+
+my_group_outcome_upd <- round(rbinom(n_patients, 1, p_true))
+
+print(my_group_outcome_upd)
+
+sample_mean <- mean(my_group_outcome_upd)
+
+print(sample_mean)
+
+```
+## Набираем статистику
+
+```{r sample n4}
+n_patients <- 500 # Количество добровольцев 
+
+n_repeats <- 1000 # Количество повторений эксперимента
+
+df_all_repeats <- data.frame(
+  n_exp = rep(1:n_repeats, each = n_patients),
+  ID =  rep(1:n_patients, n_repeats),
+  outcome_upd = round(rbinom(n_repeats*n_patients, 1, p_true))
+)
+```
+## Оценка среднего в каждом эксперименте
+
+```{r}
+df_sample_mean <- df_all_repeats %>% 
+  group_by(n_exp) %>% 
+  dplyr::summarise(mean_outcome_upd = mean(outcome_upd)) %>% 
+  ungroup()
+
+ggplot(df_sample_mean, aes(x = mean_outcome_upd)) +
+  geom_histogram(color = 'black', fill = 'blue', binwidth = 0.2) +
+  theme_bw()
+```
+## Количественные и качественные итоги
+```{r}
+error <- sqrt( mean((df_sample_mean$mean_outcome_upd-true_mean)^2) )
+print(error)
+
+```
+
+# Низкая истинная вероятность успеха, очень большая выборка (1000 человек), 1000 повторений  
+## Модель пациента  - исследование исхода  
+```{r outcome5, echo=FALSE}
+# параметры распределения
+p_true <- 0.1  # Истинная вероятность успеха
+values <- 0:1  # Возможные исходы: 0 - неудача, 1 - успех
+
+df <- data.frame(
+  values = values,
+  Pr = c(1 - p_true, p_true)  # Вероятности для 0 и 1 соответственно
+)
+
+ggplot(df, aes(x = factor(values), y = Pr)) +
+  geom_col(width = 0.7, fill = "steelblue", alpha = 0.7) +  
+  scale_x_discrete(labels = c("Неудача", "Успех")) +
+  labs(
+    title = "Распределение",
+    subtitle = paste("Вероятность успеха =", p_true),
+    x = "Исход",
+    y = "Вероятность"
+  ) +
+  theme_bw() +
+  ylim(0, 1)
+
+```
+## Характеристики исхода
+
+```{r characteristics5}
+true_mean <- p_true # Истинное среднее (математическое ожидание)
+
+print(true_mean)
+
+variance <- p_true * (1 - p_true) # Дисперсия
+
+print(variance)
+
+standard_deviation <- sqrt(variance)
+
+print(standard_deviation)
+```
+## Однократная оценка по выборке
+
+```{r sample5}
+n_patients <- 1000 # Количество пациентов 
+
+my_group_outcome_upd <- round(rbinom(n_patients, 1, p_true))
+
+print(my_group_outcome_upd)
+
+sample_mean <- mean(my_group_outcome_upd)
+
+print(sample_mean)
+
+```
+## Набираем статистику
+
+```{r sample n5}
+n_patients <- 1000 # Количество добровольцев 
+
+n_repeats <- 1000 # Количество повторений эксперимента
+
+df_all_repeats <- data.frame(
+  n_exp = rep(1:n_repeats, each = n_patients),
+  ID =  rep(1:n_patients, n_repeats),
+  outcome_upd = round(rbinom(n_repeats*n_patients, 1, p_true))
+)
+```
+## Оценка среднего в каждом эксперименте
+
+```{r}
+df_sample_mean <- df_all_repeats %>% 
+  group_by(n_exp) %>% 
+  dplyr::summarise(mean_outcome_upd = mean(outcome_upd)) %>% 
+  ungroup()
+
+ggplot(df_sample_mean, aes(x = mean_outcome_upd)) +
+  geom_histogram(color = 'black', fill = 'blue', binwidth = 0.2) +
+  theme_bw()
+```
+## Количественные и качественные итоги
+```{r}
+error <- sqrt( mean((df_sample_mean$mean_outcome_upd-true_mean)^2) )
+print(error)
+
+```
+#  Истинная вероятность успеха 0,5,  очень малая выборка (3 человека), 1000 повторений  
+## Модель пациента  - исследование исхода  
+```{r outcome6, echo=FALSE}
+# параметры распределения
+p_true <- 0.5  # Истинная вероятность успеха
+values <- 0:1  # Возможные исходы: 0 - неудача, 1 - успех
+
+df <- data.frame(
+  values = values,
+  Pr = c(1 - p_true, p_true)  # Вероятности для 0 и 1 соответственно
+)
+
+ggplot(df, aes(x = factor(values), y = Pr)) +
+  geom_col(width = 0.7, fill = "steelblue", alpha = 0.7) +  
+  scale_x_discrete(labels = c("Неудача", "Успех")) +
+  labs(
+    title = "Распределение",
+    subtitle = paste("Вероятность успеха =", p_true),
+    x = "Исход",
+    y = "Вероятность"
+  ) +
+  theme_bw() +
+  ylim(0, 1)
+
+```
+## Характеристики исхода
+
+```{r characteristics6}
+true_mean <- p_true # Истинное среднее (математическое ожидание)
+
+print(true_mean)
+
+variance <- p_true * (1 - p_true) # Дисперсия
+
+print(variance)
+
+standard_deviation <- sqrt(variance)
+
+print(standard_deviation)
+```
+## Однократная оценка по выборке
+
+```{r sample6}
+n_patients <- 3 # Количество пациентов 
+
+my_group_outcome_upd <- round(rbinom(n_patients, 1, p_true))
+
+print(my_group_outcome_upd)
+
+sample_mean <- mean(my_group_outcome_upd)
+
+print(sample_mean)
+
+```
+## Набираем статистику
+
+```{r sample n6}
+n_patients <- 3 # Количество добровольцев 
+
+n_repeats <- 1000 # Количество повторений эксперимента
+
+df_all_repeats <- data.frame(
+  n_exp = rep(1:n_repeats, each = n_patients),
+  ID =  rep(1:n_patients, n_repeats),
+  outcome_upd = round(rbinom(n_repeats*n_patients, 1, p_true))
+)
+```
+## Оценка среднего в каждом эксперименте
+
+```{r}
+df_sample_mean <- df_all_repeats %>% 
+  group_by(n_exp) %>% 
+  dplyr::summarise(mean_outcome_upd = mean(outcome_upd)) %>% 
+  ungroup()
+
+ggplot(df_sample_mean, aes(x = mean_outcome_upd)) +
+  geom_histogram(color = 'black', fill = 'blue', binwidth = 0.2) +
+  theme_bw()
+```
+## Количественные и качественные итоги
+```{r}
+error <- sqrt( mean((df_sample_mean$mean_outcome_upd-true_mean)^2) )
+print(error)
+
+```
+# истинная вероятность успеха 0,5, малая выборка (10 человек), 1000 повторений  
+## Модель пациента  - исследование исхода  
+```{r outcome7, echo=FALSE}
+# параметры распределения
+p_true <- 0.5  # Истинная вероятность успеха
+values <- 0:1  # Возможные исходы: 0 - неудача, 1 - успех
+
+df <- data.frame(
+  values = values,
+  Pr = c(1 - p_true, p_true)  # Вероятности для 0 и 1 соответственно
+)
+
+ggplot(df, aes(x = factor(values), y = Pr)) +
+  geom_col(width = 0.7, fill = "steelblue", alpha = 0.7) +  
+  scale_x_discrete(labels = c("Неудача", "Успех")) +
+  labs(
+    title = "Распределение",
+    subtitle = paste("Вероятность успеха =", p_true),
+    x = "Исход",
+    y = "Вероятность"
+  ) +
+  theme_bw() +
+  ylim(0, 1)
+
+```
+## Характеристики исхода
+
+```{r characteristics7}
+true_mean <- p_true # Истинное среднее (математическое ожидание)
+
+print(true_mean)
+
+variance <- p_true * (1 - p_true) # Дисперсия
+
+print(variance)
+
+standard_deviation <- sqrt(variance)
+
+print(standard_deviation)
+```
+## Однократная оценка по выборке
+
+```{r sample7}
+n_patients <- 10 # Количество пациентов 
+
+my_group_outcome_upd <- round(rbinom(n_patients, 1, p_true))
+
+print(my_group_outcome_upd)
+
+sample_mean <- mean(my_group_outcome_upd)
+
+print(sample_mean)
+
+```
+## Набираем статистику
+
+```{r sample n7}
+n_patients <- 10 # Количество добровольцев 
+
+n_repeats <- 1000 # Количество повторений эксперимента
+
+df_all_repeats <- data.frame(
+  n_exp = rep(1:n_repeats, each = n_patients),
+  ID =  rep(1:n_patients, n_repeats),
+  outcome_upd = round(rbinom(n_repeats*n_patients, 1, p_true))
+)
+```
+## Оценка среднего в каждом эксперименте
+
+```{r}
+df_sample_mean <- df_all_repeats %>% 
+  group_by(n_exp) %>% 
+  dplyr::summarise(mean_outcome_upd = mean(outcome_upd)) %>% 
+  ungroup()
+
+ggplot(df_sample_mean, aes(x = mean_outcome_upd)) +
+  geom_histogram(color = 'black', fill = 'blue', binwidth = 0.2) +
+  theme_bw()
+```
+## Количественные и качественные итоги
+```{r}
+error <- sqrt( mean((df_sample_mean$mean_outcome_upd-true_mean)^2) )
+print(error)
+
+```
+# истинная вероятность успеха 0,5, средняя выборка (50 человек), 1000 повторений  
+## Модель пациента  - исследование исхода  
+```{r outcome8, echo=FALSE}
+# параметры распределения
+p_true <- 0.5  # Истинная вероятность успеха
+values <- 0:1  # Возможные исходы: 0 - неудача, 1 - успех
+
+df <- data.frame(
+  values = values,
+  Pr = c(1 - p_true, p_true)  # Вероятности для 0 и 1 соответственно
+)
+
+ggplot(df, aes(x = factor(values), y = Pr)) +
+  geom_col(width = 0.7, fill = "steelblue", alpha = 0.7) +  
+  scale_x_discrete(labels = c("Неудача", "Успех")) +
+  labs(
+    title = "Распределение",
+    subtitle = paste("Вероятность успеха =", p_true),
+    x = "Исход",
+    y = "Вероятность"
+  ) +
+  theme_bw() +
+  ylim(0, 1)
+
+```
+## Характеристики исхода
+
+```{r characteristics8}
+true_mean <- p_true # Истинное среднее (математическое ожидание)
+
+print(true_mean)
+
+variance <- p_true * (1 - p_true) # Дисперсия
+
+print(variance)
+
+standard_deviation <- sqrt(variance)
+
+print(standard_deviation)
+```
+## Однократная оценка по выборке
+
+```{r sample8}
+n_patients <- 50 # Количество пациентов 
+
+my_group_outcome_upd <- round(rbinom(n_patients, 1, p_true))
+
+print(my_group_outcome_upd)
+
+sample_mean <- mean(my_group_outcome_upd)
+
+print(sample_mean)
+
+```
+## Набираем статистику
+
+```{r sample n8}
+n_patients <- 50 # Количество добровольцев 
+
+n_repeats <- 1000 # Количество повторений эксперимента
+
+df_all_repeats <- data.frame(
+  n_exp = rep(1:n_repeats, each = n_patients),
+  ID =  rep(1:n_patients, n_repeats),
+  outcome_upd = round(rbinom(n_repeats*n_patients, 1, p_true))
+)
+```
+## Оценка среднего в каждом эксперименте
+
+```{r}
+df_sample_mean <- df_all_repeats %>% 
+  group_by(n_exp) %>% 
+  dplyr::summarise(mean_outcome_upd = mean(outcome_upd)) %>% 
+  ungroup()
+
+ggplot(df_sample_mean, aes(x = mean_outcome_upd)) +
+  geom_histogram(color = 'black', fill = 'blue', binwidth = 0.2) +
+  theme_bw()
+```
+## Количественные и качественные итоги
+```{r}
+error <- sqrt( mean((df_sample_mean$mean_outcome_upd-true_mean)^2) )
+print(error)
+
+```
+# Низкая истинная вероятность успеха, большая выборка (500 человек), 1000 повторений  
+## Модель пациента  - исследование исхода  
+```{r outcome9, echo=FALSE}
+# параметры распределения
+p_true <- 0.5  # Истинная вероятность успеха
+values <- 0:1  # Возможные исходы: 0 - неудача, 1 - успех
+
+df <- data.frame(
+  values = values,
+  Pr = c(1 - p_true, p_true)  # Вероятности для 0 и 1 соответственно
+)
+
+ggplot(df, aes(x = factor(values), y = Pr)) +
+  geom_col(width = 0.7, fill = "steelblue", alpha = 0.7) +  
+  scale_x_discrete(labels = c("Неудача", "Успех")) +
+  labs(
+    title = "Распределение",
+    subtitle = paste("Вероятность успеха =", p_true),
+    x = "Исход",
+    y = "Вероятность"
+  ) +
+  theme_bw() +
+  ylim(0, 1)
+
+```
+## Характеристики исхода
+
+```{r characteristics9}
+true_mean <- p_true # Истинное среднее (математическое ожидание)
+
+print(true_mean)
+
+variance <- p_true * (1 - p_true) # Дисперсия
+
+print(variance)
+
+standard_deviation <- sqrt(variance)
+
+print(standard_deviation)
+```
+## Однократная оценка по выборке
+
+```{r sample9}
+n_patients <- 500 # Количество пациентов 
+
+my_group_outcome_upd <- round(rbinom(n_patients, 1, p_true))
+
+print(my_group_outcome_upd)
+
+sample_mean <- mean(my_group_outcome_upd)
+
+print(sample_mean)
+
+```
+## Набираем статистику
+
+```{r sample n9}
+n_patients <- 500 # Количество добровольцев 
+
+n_repeats <- 1000 # Количество повторений эксперимента
+
+df_all_repeats <- data.frame(
+  n_exp = rep(1:n_repeats, each = n_patients),
+  ID =  rep(1:n_patients, n_repeats),
+  outcome_upd = round(rbinom(n_repeats*n_patients, 1, p_true))
+)
+```
+## Оценка среднего в каждом эксперименте
+
+```{r}
+df_sample_mean <- df_all_repeats %>% 
+  group_by(n_exp) %>% 
+  dplyr::summarise(mean_outcome_upd = mean(outcome_upd)) %>% 
+  ungroup()
+
+ggplot(df_sample_mean, aes(x = mean_outcome_upd)) +
+  geom_histogram(color = 'black', fill = 'blue', binwidth = 0.2) +
+  theme_bw()
+```
+## Количественные и качественные итоги
+```{r}
+error <- sqrt( mean((df_sample_mean$mean_outcome_upd-true_mean)^2) )
+print(error)
+
+```
+
+# вероятность успеха 0,5, очень большая выборка (1000 человек), 1000 повторений  
+## Модель пациента  - исследование исхода  
+```{r outcome10, echo=FALSE}
+# параметры распределения
+p_true <- 0.5  # Истинная вероятность успеха
+values <- 0:1  # Возможные исходы: 0 - неудача, 1 - успех
+
+df <- data.frame(
+  values = values,
+  Pr = c(1 - p_true, p_true)  # Вероятности для 0 и 1 соответственно
+)
+
+ggplot(df, aes(x = factor(values), y = Pr)) +
+  geom_col(width = 0.7, fill = "steelblue", alpha = 0.7) +  
+  scale_x_discrete(labels = c("Неудача", "Успех")) +
+  labs(
+    title = "Распределение",
+    subtitle = paste("Вероятность успеха =", p_true),
+    x = "Исход",
+    y = "Вероятность"
+  ) +
+  theme_bw() +
+  ylim(0, 1)
+
+```
+## Характеристики исхода
+
+```{r characteristics10}
+true_mean <- p_true # Истинное среднее (математическое ожидание)
+
+print(true_mean)
+
+variance <- p_true * (1 - p_true) # Дисперсия
+
+print(variance)
+
+standard_deviation <- sqrt(variance)
+
+print(standard_deviation)
+```
+## Однократная оценка по выборке
+
+```{r sample10}
+n_patients <- 1000 # Количество пациентов 
+
+my_group_outcome_upd <- round(rbinom(n_patients, 1, p_true))
+
+print(my_group_outcome_upd)
+
+sample_mean <- mean(my_group_outcome_upd)
+
+print(sample_mean)
+
+```
+## Набираем статистику
+
+```{r sample n10}
+n_patients <- 1000 # Количество добровольцев 
+
+n_repeats <- 1000 # Количество повторений эксперимента
+
+df_all_repeats <- data.frame(
+  n_exp = rep(1:n_repeats, each = n_patients),
+  ID =  rep(1:n_patients, n_repeats),
+  outcome_upd = round(rbinom(n_repeats*n_patients, 1, p_true))
+)
+```
+## Оценка среднего в каждом эксперименте
+
+```{r}
+df_sample_mean <- df_all_repeats %>% 
+  group_by(n_exp) %>% 
+  dplyr::summarise(mean_outcome_upd = mean(outcome_upd)) %>% 
+  ungroup()
+
+ggplot(df_sample_mean, aes(x = mean_outcome_upd)) +
+  geom_histogram(color = 'black', fill = 'blue', binwidth = 0.2) +
+  theme_bw()
+```
+## Количественные и качественные итоги
+```{r}
+error <- sqrt( mean((df_sample_mean$mean_outcome_upd-true_mean)^2) )
+print(error)
+
+```
+
+#  Истинная вероятность успеха 0,9,  очень малая выборка (3 человека), 1000 повторений  
+## Модель пациента  - исследование исхода  
+```{r outcome11, echo=FALSE}
+# параметры распределения
+p_true <- 0.9  # Истинная вероятность успеха
+values <- 0:1  # Возможные исходы: 0 - неудача, 1 - успех
+
+df <- data.frame(
+  values = values,
+  Pr = c(1 - p_true, p_true)  # Вероятности для 0 и 1 соответственно
+)
+
+ggplot(df, aes(x = factor(values), y = Pr)) +
+  geom_col(width = 0.7, fill = "steelblue", alpha = 0.7) +  
+  scale_x_discrete(labels = c("Неудача", "Успех")) +
+  labs(
+    title = "Распределение",
+    subtitle = paste("Вероятность успеха =", p_true),
+    x = "Исход",
+    y = "Вероятность"
+  ) +
+  theme_bw() +
+  ylim(0, 1)
+
+```
+## Характеристики исхода
+
+```{r characteristics11}
+true_mean <- p_true # Истинное среднее (математическое ожидание)
+
+print(true_mean)
+
+variance <- p_true * (1 - p_true) # Дисперсия
+
+print(variance)
+
+standard_deviation <- sqrt(variance)
+
+print(standard_deviation)
+```
+## Однократная оценка по выборке
+
+```{r sample11}
+n_patients <- 3 # Количество пациентов 
+
+my_group_outcome_upd <- round(rbinom(n_patients, 1, p_true))
+
+print(my_group_outcome_upd)
+
+sample_mean <- mean(my_group_outcome_upd)
+
+print(sample_mean)
+
+```
+## Набираем статистику
+
+```{r sample n11}
+n_patients <- 3 # Количество добровольцев 
+
+n_repeats <- 1000 # Количество повторений эксперимента
+
+df_all_repeats <- data.frame(
+  n_exp = rep(1:n_repeats, each = n_patients),
+  ID =  rep(1:n_patients, n_repeats),
+  outcome_upd = round(rbinom(n_repeats*n_patients, 1, p_true))
+)
+```
+## Оценка среднего в каждом эксперименте
+
+```{r}
+df_sample_mean <- df_all_repeats %>% 
+  group_by(n_exp) %>% 
+  dplyr::summarise(mean_outcome_upd = mean(outcome_upd)) %>% 
+  ungroup()
+
+ggplot(df_sample_mean, aes(x = mean_outcome_upd)) +
+  geom_histogram(color = 'black', fill = 'blue', binwidth = 0.2) +
+  theme_bw()
+```
+## Количественные и качественные итоги
+```{r}
+error <- sqrt( mean((df_sample_mean$mean_outcome_upd-true_mean)^2) )
+print(error)
+
+```
+# истинная вероятность успеха 0,9, малая выборка (10 человек), 1000 повторений  
+## Модель пациента  - исследование исхода  
+```{r outcome12, echo=FALSE}
+# параметры распределения
+p_true <- 0.9  # Истинная вероятность успеха
+values <- 0:1  # Возможные исходы: 0 - неудача, 1 - успех
+
+df <- data.frame(
+  values = values,
+  Pr = c(1 - p_true, p_true)  # Вероятности для 0 и 1 соответственно
+)
+
+ggplot(df, aes(x = factor(values), y = Pr)) +
+  geom_col(width = 0.7, fill = "steelblue", alpha = 0.7) +  
+  scale_x_discrete(labels = c("Неудача", "Успех")) +
+  labs(
+    title = "Распределение",
+    subtitle = paste("Вероятность успеха =", p_true),
+    x = "Исход",
+    y = "Вероятность"
+  ) +
+  theme_bw() +
+  ylim(0, 1)
+
+```
+## Характеристики исхода
+
+```{r characteristics12}
+true_mean <- p_true # Истинное среднее (математическое ожидание)
+
+print(true_mean)
+
+variance <- p_true * (1 - p_true) # Дисперсия
+
+print(variance)
+
+standard_deviation <- sqrt(variance)
+
+print(standard_deviation)
+```
+## Однократная оценка по выборке
+
+```{r sample12}
+n_patients <- 10 # Количество пациентов 
+
+my_group_outcome_upd <- round(rbinom(n_patients, 1, p_true))
+
+print(my_group_outcome_upd)
+
+sample_mean <- mean(my_group_outcome_upd)
+
+print(sample_mean)
+
+```
+## Набираем статистику
+
+```{r sample n12}
+n_patients <- 10 # Количество добровольцев 
+
+n_repeats <- 1000 # Количество повторений эксперимента
+
+df_all_repeats <- data.frame(
+  n_exp = rep(1:n_repeats, each = n_patients),
+  ID =  rep(1:n_patients, n_repeats),
+  outcome_upd = round(rbinom(n_repeats*n_patients, 1, p_true))
+)
+```
+## Оценка среднего в каждом эксперименте
+
+```{r}
+df_sample_mean <- df_all_repeats %>% 
+  group_by(n_exp) %>% 
+  dplyr::summarise(mean_outcome_upd = mean(outcome_upd)) %>% 
+  ungroup()
+
+ggplot(df_sample_mean, aes(x = mean_outcome_upd)) +
+  geom_histogram(color = 'black', fill = 'blue', binwidth = 0.2) +
+  theme_bw()
+```
+## Количественные и качественные итоги
+```{r}
+error <- sqrt( mean((df_sample_mean$mean_outcome_upd-true_mean)^2) )
+print(error)
+
+```
+# истинная вероятность успеха 0,9, средняя выборка (50 человек), 1000 повторений  
+## Модель пациента  - исследование исхода  
+```{r outcome13, echo=FALSE}
+# параметры распределения
+p_true <- 0.9  # Истинная вероятность успеха
+values <- 0:1  # Возможные исходы: 0 - неудача, 1 - успех
+
+df <- data.frame(
+  values = values,
+  Pr = c(1 - p_true, p_true)  # Вероятности для 0 и 1 соответственно
+)
+
+ggplot(df, aes(x = factor(values), y = Pr)) +
+  geom_col(width = 0.7, fill = "steelblue", alpha = 0.7) +  
+  scale_x_discrete(labels = c("Неудача", "Успех")) +
+  labs(
+    title = "Распределение",
+    subtitle = paste("Вероятность успеха =", p_true),
+    x = "Исход",
+    y = "Вероятность"
+  ) +
+  theme_bw() +
+  ylim(0, 1)
+
+```
+## Характеристики исхода
+
+```{r characteristics13}
+true_mean <- p_true # Истинное среднее (математическое ожидание)
+
+print(true_mean)
+
+variance <- p_true * (1 - p_true) # Дисперсия
+
+print(variance)
+
+standard_deviation <- sqrt(variance)
+
+print(standard_deviation)
+```
+## Однократная оценка по выборке
+
+```{r sample13}
+n_patients <- 50 # Количество пациентов 
+
+my_group_outcome_upd <- round(rbinom(n_patients, 1, p_true))
+
+print(my_group_outcome_upd)
+
+sample_mean <- mean(my_group_outcome_upd)
+
+print(sample_mean)
+
+```
+## Набираем статистику
+
+```{r sample n13}
+n_patients <- 50 # Количество добровольцев 
+
+n_repeats <- 1000 # Количество повторений эксперимента
+
+df_all_repeats <- data.frame(
+  n_exp = rep(1:n_repeats, each = n_patients),
+  ID =  rep(1:n_patients, n_repeats),
+  outcome_upd = round(rbinom(n_repeats*n_patients, 1, p_true))
+)
+```
+## Оценка среднего в каждом эксперименте
+
+```{r}
+df_sample_mean <- df_all_repeats %>% 
+  group_by(n_exp) %>% 
+  dplyr::summarise(mean_outcome_upd = mean(outcome_upd)) %>% 
+  ungroup()
+
+ggplot(df_sample_mean, aes(x = mean_outcome_upd)) +
+  geom_histogram(color = 'black', fill = 'blue', binwidth = 0.2) +
+  theme_bw()
+```
+## Количественные и качественные итоги
+```{r}
+error <- sqrt( mean((df_sample_mean$mean_outcome_upd-true_mean)^2) )
+print(error)
+
+```
+#  истинная вероятность успеха 0,9, большая выборка (500 человек), 1000 повторений  
+## Модель пациента  - исследование исхода  
+```{r outcome14, echo=FALSE}
+# параметры распределения
+p_true <- 0.9  # Истинная вероятность успеха
+values <- 0:1  # Возможные исходы: 0 - неудача, 1 - успех
+
+df <- data.frame(
+  values = values,
+  Pr = c(1 - p_true, p_true)  # Вероятности для 0 и 1 соответственно
+)
+
+ggplot(df, aes(x = factor(values), y = Pr)) +
+  geom_col(width = 0.7, fill = "steelblue", alpha = 0.7) +  
+  scale_x_discrete(labels = c("Неудача", "Успех")) +
+  labs(
+    title = "Распределение",
+    subtitle = paste("Вероятность успеха =", p_true),
+    x = "Исход",
+    y = "Вероятность"
+  ) +
+  theme_bw() +
+  ylim(0, 1)
+
+```
+## Характеристики исхода
+
+```{r characteristics14}
+true_mean <- p_true # Истинное среднее (математическое ожидание)
+
+print(true_mean)
+
+variance <- p_true * (1 - p_true) # Дисперсия
+
+print(variance)
+
+standard_deviation <- sqrt(variance)
+
+print(standard_deviation)
+```
+## Однократная оценка по выборке
+
+```{r sample14}
+n_patients <- 500 # Количество пациентов 
+
+my_group_outcome_upd <- round(rbinom(n_patients, 1, p_true))
+
+print(my_group_outcome_upd)
+
+sample_mean <- mean(my_group_outcome_upd)
+
+print(sample_mean)
+
+```
+## Набираем статистику
+
+```{r sample n14}
+n_patients <- 500 # Количество добровольцев 
+
+n_repeats <- 1000 # Количество повторений эксперимента
+
+df_all_repeats <- data.frame(
+  n_exp = rep(1:n_repeats, each = n_patients),
+  ID =  rep(1:n_patients, n_repeats),
+  outcome_upd = round(rbinom(n_repeats*n_patients, 1, p_true))
+)
+```
+## Оценка среднего в каждом эксперименте
+
+```{r}
+df_sample_mean <- df_all_repeats %>% 
+  group_by(n_exp) %>% 
+  dplyr::summarise(mean_outcome_upd = mean(outcome_upd)) %>% 
+  ungroup()
+
+ggplot(df_sample_mean, aes(x = mean_outcome_upd)) +
+  geom_histogram(color = 'black', fill = 'blue', binwidth = 0.2) +
+  theme_bw()
+```
+## Количественные и качественные итоги
+```{r}
+error <- sqrt( mean((df_sample_mean$mean_outcome_upd-true_mean)^2) )
+print(error)
+
+```
+
+# вероятность успеха 0,9, очень большая выборка (1000 человек), 1000 повторений  
+## Модель пациента  - исследование исхода  
+```{r outcome15, echo=FALSE}
+# параметры распределения
+p_true <- 0.9  # Истинная вероятность успеха
+values <- 0:1  # Возможные исходы: 0 - неудача, 1 - успех
+
+df <- data.frame(
+  values = values,
+  Pr = c(1 - p_true, p_true)  # Вероятности для 0 и 1 соответственно
+)
+
+ggplot(df, aes(x = factor(values), y = Pr)) +
+  geom_col(width = 0.7, fill = "steelblue", alpha = 0.7) +  
+  scale_x_discrete(labels = c("Неудача", "Успех")) +
+  labs(
+    title = "Распределение",
+    subtitle = paste("Вероятность успеха =", p_true),
+    x = "Исход",
+    y = "Вероятность"
+  ) +
+  theme_bw() +
+  ylim(0, 1)
+
+```
+## Характеристики исхода
+
+```{r characteristics15}
+true_mean <- p_true # Истинное среднее (математическое ожидание)
+
+print(true_mean)
+
+variance <- p_true * (1 - p_true) # Дисперсия
+
+print(variance)
+
+standard_deviation <- sqrt(variance)
+
+print(standard_deviation)
+```
+## Однократная оценка по выборке
+
+```{r sample15}
+n_patients <- 1000 # Количество пациентов 
+
+my_group_outcome_upd <- round(rbinom(n_patients, 1, p_true))
+
+print(my_group_outcome_upd)
+
+sample_mean <- mean(my_group_outcome_upd)
+
+print(sample_mean)
+
+```
+## Набираем статистику
+
+```{r sample n15}
+n_patients <- 1000 # Количество добровольцев 
+
+n_repeats <- 1000 # Количество повторений эксперимента
+
+df_all_repeats <- data.frame(
+  n_exp = rep(1:n_repeats, each = n_patients),
+  ID =  rep(1:n_patients, n_repeats),
+  outcome_upd = round(rbinom(n_repeats*n_patients, 1, p_true))
+)
+```
+## Оценка среднего в каждом эксперименте
+
+```{r}
+df_sample_mean <- df_all_repeats %>% 
+  group_by(n_exp) %>% 
+  dplyr::summarise(mean_outcome_upd = mean(outcome_upd)) %>% 
+  ungroup()
+
+ggplot(df_sample_mean, aes(x = mean_outcome_upd)) +
+  geom_histogram(color = 'black', fill = 'blue', binwidth = 0.2) +
+  theme_bw()
+```
+## Количественные и качественные итоги
+
+```{r}
+error <- sqrt( mean((df_sample_mean$mean_outcome_upd-true_mean)^2) )
+print(error)
+```
+
+# Зависимость стадартной ошибки среднего от размера выборки 
+```{r fig.width=10, fig.height=10}
+PrP <- read_excel("PrP.xlsx")
+PrP[15, "error"] <- 0.009 #опечаталась, пришлось заменить значение 
+View(PrP)
+
+ggplot(PrP, aes(x = `sample size`, y = `error`)) +
+  geom_point(aes(colour = `true mean`), size = 2) +
+  geom_smooth(method = "lm", se = FALSE, colour = "red") + 
+  labs(
+    title = "Зависимость стандартной ошибки среднего от размера выборки",
+    x = "Размер выборки",
+    y = "Стандартная ошибка среднего"
+  ) +
+   theme_bw() +
+  theme(
+    title = element_text(size = 12),
+    axis.text.x = element_text(size = 8),
+    axis.text.y = element_text(size = 8)
+  )
+```
+# Зависимость стандартной ошибки среднего от значения истинной вероятности события
+```{r fig.width=10, fig.height=10}
+
+ggplot(PrP, aes(x = `true mean`, y = `error`)) +
+  geom_point(aes(colour = `sample size`), size = 2) +
+  geom_smooth(method = "lm", se = FALSE, colour = "red") + 
+  labs(
+    title = "Зависимость стандартной ошибки среднего от истинной вероятности",
+    x = "Истинная вероятность",
+    y = "Стандартная ошибка среднего"
+  ) +
+   theme_bw() +
+  theme(
+    title = element_text(size = 12),
+    axis.text.x = element_text(size = 8),
+    axis.text.y = element_text(size = 8)
+  )
+```
+# Визуализация трех параметров
+```{r}
+ggplot(PrP, aes(x = `sample size`, y = `error`, color = factor(`true mean`))) +
+  geom_point(size = 3) +
+  geom_line() +
+  scale_x_log10() + 
+  labs(title = "Зависимость стандартной ошибки среднего от размера выборки",
+       x = "Размер выборки (логарифмическая шкала)",
+       y = "Ошибка",
+       color = "Истинное среднее") +
+  theme_minimal()
+```
+
+# Выводы: 
+ # Чем больше размер выборки, тем меньше величина ошибки
+ # Наиболее драматичное снижение ошибки  - когда переходим от очень малых выборок к средним (хоты бы 10). Для больших выборок совсем маленькое значение ошибки 
+ # для значений истинной вероятности 0.5 значение ошибки больше, чем для крайних значений (низкой и высокой вероятности успеха). Это связано с более высокой дисперсией вследствие неопределенности (значение может быть успехом и неудачей с равной вероятностью)
+ #таким образом, с ростом выборки выборочное среднее стремится к истинному значению ГС  
+ 
+```{r}
+
+```
+ 
+ 
+
